@@ -33,7 +33,8 @@ int main() {
     while(1) {
         fprintf(stdout, "s=Stop - r=Resume: ");
         fflush(stdout);
-        fgets(temp, sizeof(temp), stdin);
+        if (fgets(temp, sizeof(temp), stdin) == NULL)
+            exit(-1);
         fprintf(stdout, "%s\n",temp);
         switch(temp[0]) {
         case 's':
