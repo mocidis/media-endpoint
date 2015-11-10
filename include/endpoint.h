@@ -15,49 +15,9 @@ typedef enum streamer_state_e {
     EPS_STOP = 2
 } endpoint_state;
 
-typedef struct endpoint_s {
-    endpoint_type type;
-    endpoint_state state;
-    pjmedia_endpt *ep;
-    pj_pool_t *pool;
+typedef struct endpoint_stream_s {
+    unsigned slot;
     pjmedia_stream *stream;
-    pjmedia_codec_info *ci;
-    
-    union {
-        struct {
-            pjmedia_conf *conf;
-            union {
-                pjmedia_master_port *mport;
-                pjmedia_snd_port *snd_port;
-            };
-        } aout;
-        union {
-            pjmedia_master_port *mport;
-            pjmedia_snd_port *snd_port;
-        } ain;
-    };
-    /*pjmedia_conf *conf;
-
-    union {
-        struct {
-            pjmedia_master_port *mport;
-            pjmedia_port *port;
-        } filein;
-        struct {
-            pjmedia_master_port *mport;
-            pjmedia_port *port;
-        } fileout;
-    };
-    
-    union {
-        struct {
-            pjmedia_snd_port *snd_port;
-        } devin;
-        struct {
-            pjmedia_snd_port *snd_port;
-        } devout;
-    };
-    */
     struct {
         int mean_rtt_us;
         int max_rtt_us;
@@ -71,6 +31,30 @@ typedef struct endpoint_s {
         unsigned lost;
         unsigned discard;
     } drop;
+} endpoint_stream_t;
+
+typedef struct endpoint_s {
+    endpoint_type type;
+    endpoint_state state;
+    pjmedia_endpt *ep;
+    pj_pool_t *pool;
+    pjmedia_codec_info *ci;
+    
+    endpoint_stream_t stream;
+
+    union {
+        struct {
+            pjmedia_conf *conf;
+            union {
+                pjmedia_master_port *mport;
+                pjmedia_snd_port *snd_port;
+            };
+        } aout;
+        union {
+            pjmedia_master_port *mport;
+            pjmedia_snd_port *snd_port;
+        } ain;
+    };
 } endpoint_t;
 
 void streamer_init(endpoint_t *streamer, pjmedia_endpt *ep, pj_pool_t *pool);

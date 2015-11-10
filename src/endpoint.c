@@ -1,7 +1,6 @@
 #include "endpoint.h"
 #include "ansi-utils.h"
 #include "my-pjlib-utils.h"
-//#include "my-pjmedia-utils.h"
 static pj_status_t create_mstream(pj_pool_t *pool, 
                 pjmedia_endpt *endpt, 
                 const pjmedia_codec_info *codec_info, 
@@ -102,7 +101,7 @@ static void endpoint_init(endpoint_t *eep, pjmedia_endpt *ep, pj_pool_t *pool) {
 
     eep->ep = ep;
     eep->pool = pool;
-    eep->stream = NULL;
+    eep->stream.stream = NULL;
     eep->type = EPT_UNKNOWN;
     eep->state = EPS_UNINIT;
 
@@ -119,15 +118,15 @@ void streamer_init(endpoint_t *streamer, pjmedia_endpt *ep, pj_pool_t *pool) {
 
 pj_status_t streamer_config_stream(endpoint_t *streamer, int lport, char *rhost, int rport) {
     pjmedia_transport *tp;
-    if(streamer->stream != NULL) {
-        tp = pjmedia_stream_get_transport(streamer->stream);
-        pjmedia_stream_destroy(streamer->stream);
+    if(streamer->stream.stream != NULL) {
+        tp = pjmedia_stream_get_transport(streamer->stream.stream);
+        pjmedia_stream_destroy(streamer->stream.stream);
         pjmedia_transport_close(tp);
-        streamer->stream = NULL;
+        streamer->stream.stream = NULL;
     }
     CHECK_R(__FILE__, ostream_create(streamer->pool, streamer->ep, streamer->ci, \
-                                      lport, rhost, rport, &streamer->stream));
-    CHECK(__FILE__, pjmedia_stream_start(streamer->stream));
+                                      lport, rhost, rport, &streamer->stream.stream));
+    CHECK(__FILE__, pjmedia_stream_start(streamer->stream.stream));
     return PJ_SUCCESS;
 }
 void streamer_config_file_source(endpoint_t *streamer, char *file_name) {
@@ -135,8 +134,8 @@ void streamer_config_file_source(endpoint_t *streamer, char *file_name) {
     
     CHECK(__FILE__, pjmedia_wav_player_port_create(streamer->pool, file_name, 0, 0, -1, &fport));
 
-    if(streamer->stream != NULL) {
-        CHECK(__FILE__, pjmedia_stream_get_port(streamer->stream, &port));
+    if(streamer->stream.stream != NULL) {
+        CHECK(__FILE__, pjmedia_stream_get_port(streamer->stream.stream, &port));
         CHECK(__FILE__, pjmedia_master_port_create(streamer->pool,
                                 fport, 
                                 port,
@@ -162,7 +161,7 @@ void streamer_config_dev_source(endpoint_t *streamer, int idx) {
 void streamer_start(endpoint_t *streamer) {
     pjmedia_port *port;
     PJ_LOG(3, (__FILE__, "Streamer Start"));
-    CHECK_NULL(__FILE__, streamer->stream);
+    CHECK_NULL(__FILE__, streamer->stream.stream);
     if( streamer->state == EPS_STOP ) {
         switch( streamer->type ) {
         case EPT_FILE:
@@ -172,7 +171,7 @@ void streamer_start(endpoint_t *streamer) {
             break;
         case EPT_DEV:
             PJ_LOG(3, (__FILE__, "Start stream from sound dev"));
-            CHECK(__FILE__, pjmedia_stream_get_port(streamer->stream, &port));
+            CHECK(__FILE__, pjmedia_stream_get_port(streamer->stream.stream, &port));
             CHECK(__FILE__, pjmedia_snd_port_connect(streamer->ain.snd_port, port));
             streamer->state = EPS_START;
             break;
@@ -189,17 +188,17 @@ void streamer_start(endpoint_t *streamer) {
 void streamer_update_stats(endpoint_t *streamer) {
     pjmedia_rtcp_stat stat;
     pjmedia_jb_state jbstate;
-    pjmedia_stream_get_stat(streamer->stream, &stat);
-    pjmedia_stream_get_stat_jbuf(streamer->stream, &jbstate);
-    streamer->delay.mean_rtt_us = stat.rtt.mean;
-    streamer->delay.max_rtt_us = stat.rtt.max;
-    streamer->delay.min_rtt_us = stat.rtt.min;
-    streamer->delay.mean_delay_ms = jbstate.avg_delay;
-    streamer->delay.min_delay_ms = jbstate.min_delay;
-    streamer->delay.max_delay_ms = jbstate.max_delay;
-    streamer->drop.lost = stat.tx.loss;
-    streamer->drop.discard = stat.tx.discard;
-    streamer->drop.pkt = stat.tx.pkt;
+    pjmedia_stream_get_stat(streamer->stream.stream, &stat);
+    pjmedia_stream_get_stat_jbuf(streamer->stream.stream, &jbstate);
+    streamer->stream.delay.mean_rtt_us = stat.rtt.mean;
+    streamer->stream.delay.max_rtt_us = stat.rtt.max;
+    streamer->stream.delay.min_rtt_us = stat.rtt.min;
+    streamer->stream.delay.mean_delay_ms = jbstate.avg_delay;
+    streamer->stream.delay.min_delay_ms = jbstate.min_delay;
+    streamer->stream.delay.max_delay_ms = jbstate.max_delay;
+    streamer->stream.drop.lost = stat.tx.loss;
+    streamer->stream.drop.discard = stat.tx.discard;
+    streamer->stream.drop.pkt = stat.tx.pkt;
 }
 
 void streamer_stop(endpoint_t *streamer) {
@@ -236,21 +235,20 @@ void receiver_init(endpoint_t *receiver, pjmedia_endpt *ep, pj_pool_t *pool, int
 pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport) {
     pjmedia_transport *tp;
     pjmedia_port *port;
-    unsigned slot;
-    if(receiver->stream != NULL) {
-        tp = pjmedia_stream_get_transport(receiver->stream);
-        pjmedia_stream_destroy(receiver->stream);
+    if(receiver->stream.stream != NULL) {
+        tp = pjmedia_stream_get_transport(receiver->stream.stream);
+        pjmedia_stream_destroy(receiver->stream.stream);
         pjmedia_transport_close(tp);
-        receiver->stream = NULL;
+        receiver->stream.stream = NULL;
     }
     CHECK_R(__FILE__, mistream_create(receiver->pool, receiver->ep,\
-                                       receiver->ci, lport, mcast, &receiver->stream));
+                                       receiver->ci, lport, mcast, &receiver->stream.stream));
 
-    CHECK(__FILE__, pjmedia_stream_start(receiver->stream));
-    CHECK(__FILE__, pjmedia_stream_get_port(receiver->stream, &port));
+    CHECK(__FILE__, pjmedia_stream_start(receiver->stream.stream));
+    CHECK(__FILE__, pjmedia_stream_get_port(receiver->stream.stream, &port));
 
-    CHECK(__FILE__, pjmedia_conf_add_port(receiver->aout.conf, receiver->pool, port, NULL, &slot)); // !!!
-    pjmedia_conf_connect_port(receiver->aout.conf, slot, 0, 0);
+    CHECK(__FILE__, pjmedia_conf_add_port(receiver->aout.conf, receiver->pool, port, NULL, &receiver->stream.slot)); // !!!
+    pjmedia_conf_connect_port(receiver->aout.conf, receiver->stream.slot, 0, 0);
 
     return PJ_SUCCESS;
 }
@@ -291,7 +289,7 @@ void receiver_config_dev_sink(endpoint_t *receiver, int idx) {
 void receiver_start(endpoint_t *receiver) {
     pjmedia_port *port;
     PJ_LOG(3, (__FILE__, "Receiver Start"));
-    CHECK_NULL(__FILE__, receiver->stream);
+    CHECK_NULL(__FILE__, receiver->stream.stream);
     if( receiver->state == EPS_STOP ) {
         switch (receiver->type) {
         case EPT_FILE:
@@ -319,17 +317,17 @@ void receiver_start(endpoint_t *receiver) {
 void receiver_update_stats(endpoint_t *receiver) {
     pjmedia_rtcp_stat stat;
     pjmedia_jb_state jbstate;
-    pjmedia_stream_get_stat(receiver->stream, &stat);
-    pjmedia_stream_get_stat_jbuf(receiver->stream, &jbstate);
-    receiver->delay.mean_rtt_us = stat.rtt.mean;
-    receiver->delay.max_rtt_us = stat.rtt.max;
-    receiver->delay.min_rtt_us = stat.rtt.min;
-    receiver->delay.mean_delay_ms = jbstate.avg_delay;
-    receiver->delay.min_delay_ms = jbstate.min_delay;
-    receiver->delay.max_delay_ms = jbstate.max_delay;
-    receiver->drop.lost = stat.rx.loss;
-    receiver->drop.discard = stat.rx.discard;
-    receiver->drop.pkt = stat.rx.pkt;
+    pjmedia_stream_get_stat(receiver->stream.stream, &stat);
+    pjmedia_stream_get_stat_jbuf(receiver->stream.stream, &jbstate);
+    receiver->stream.delay.mean_rtt_us = stat.rtt.mean;
+    receiver->stream.delay.max_rtt_us = stat.rtt.max;
+    receiver->stream.delay.min_rtt_us = stat.rtt.min;
+    receiver->stream.delay.mean_delay_ms = jbstate.avg_delay;
+    receiver->stream.delay.min_delay_ms = jbstate.min_delay;
+    receiver->stream.delay.max_delay_ms = jbstate.max_delay;
+    receiver->stream.drop.lost = stat.rx.loss;
+    receiver->stream.drop.discard = stat.rx.discard;
+    receiver->stream.drop.pkt = stat.rx.pkt;
 }
 void receiver_stop(endpoint_t *receiver) {
     PJ_LOG(3, (__FILE__, "Stop"));

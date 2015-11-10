@@ -62,8 +62,8 @@ int main() {
         case 'v':
             streamer_update_stats(&streamer);
             fprintf(stdout, "rtt:%d - delay:%d - pkt:%d - lost: %d - discard:%d\n",
-                            streamer.delay.mean_rtt_us, streamer.delay.mean_delay_ms,
-                            streamer.drop.pkt, streamer.drop.lost, streamer.drop.discard);
+                            streamer.stream.delay.mean_rtt_us, streamer.stream.delay.mean_delay_ms,
+                            streamer.stream.drop.pkt, streamer.stream.drop.lost, streamer.stream.drop.discard);
             break;
         }
         pj_thread_sleep(5*100);

@@ -60,8 +60,8 @@ int main() {
         case 'v':
             receiver_update_stats(&receiver);
             fprintf(stdout, "rtt:%d - delay:%d - pkt:%d - lost: %d - discard:%d\n",
-                            receiver.delay.mean_rtt_us, receiver.delay.mean_delay_ms,
-                            receiver.drop.pkt, receiver.drop.lost, receiver.drop.discard);
+                            receiver.stream.delay.mean_rtt_us, receiver.stream.delay.mean_delay_ms,
+                            receiver.stream.drop.pkt, receiver.stream.drop.lost, receiver.stream.drop.discard);
             break;
         }
         pj_thread_sleep(5*100);
