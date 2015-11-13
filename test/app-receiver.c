@@ -26,12 +26,16 @@ int main() {
 
     //receiver_init(&receiver, ep, pool);
     receiver_init(&receiver, ep, pool, 2);
-    receiver_config_dev_sink(&receiver, 1);
-    receiver_config_stream(&receiver, mcast, lport);
+    receiver_config_dev_sink(&receiver, 3);
+    receiver_config_stream(&receiver, mcast, lport, 0);
     receiver_start(&receiver);
 
+    int volume;
+    pjmedia_aud_stream *aud_stream;
+    unsigned vol;
+
     while(1) {
-        fprintf(stdout, "s=Stop - r=Resume: ");
+        fprintf(stdout, "s=Stop - r=Resume:\n");
         fflush(stdout);
         if (fgets(temp, sizeof(temp), stdin) == NULL)
             exit(-1);
@@ -48,20 +52,25 @@ int main() {
         case '+':
             lport++;
             receiver_stop(&receiver);
-            receiver_config_stream(&receiver, mcast, lport);
+            receiver_config_stream(&receiver, mcast, lport, 0);
             receiver_start(&receiver);
             break;
         case '-':
             lport--;
             receiver_stop(&receiver);
-            receiver_config_stream(&receiver, mcast, lport);
+            receiver_config_stream(&receiver, mcast, lport, 0);
             receiver_start(&receiver);
             break;
         case 'v':
             receiver_update_stats(&receiver);
             fprintf(stdout, "rtt:%d - delay:%d - pkt:%d - lost: %d - discard:%d\n",
-                            receiver.stream.delay.mean_rtt_us, receiver.stream.delay.mean_delay_ms,
-                            receiver.stream.drop.pkt, receiver.stream.drop.lost, receiver.stream.drop.discard);
+                            receiver.streams[0].delay.mean_rtt_us, receiver.streams[0].delay.mean_delay_ms,
+                            receiver.streams[0].drop.pkt, receiver.streams[0].drop.lost, receiver.streams[0].drop.discard);
+            break;
+        case 'm':
+            vol = atoi(&temp[3]);
+            vol = (vol * 256)/100 - 128;
+            receiver_adjust_volume(&receiver, 0, vol);         
             break;
         }
         pj_thread_sleep(5*100);

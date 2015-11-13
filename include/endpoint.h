@@ -40,7 +40,8 @@ typedef struct endpoint_s {
     pj_pool_t *pool;
     pjmedia_codec_info *ci;
     
-    endpoint_stream_t stream;
+    int nstreams;
+    endpoint_stream_t *streams;
 
     union {
         struct {
@@ -66,10 +67,14 @@ void streamer_update_stats(endpoint_t *streamer);
 void streamer_stop(endpoint_t *streamer);
 
 void receiver_init(endpoint_t *receiver, pjmedia_endpt *ep, pj_pool_t *pool, int nchans);
-pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport);
+//pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport, int idx);
+pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport, int idx);
 void receiver_config_file_sink(endpoint_t *receiver, char *file_name);
 void receiver_config_dev_sink(endpoint_t *receiver, int idx);
 void receiver_start(endpoint_t *receiver);
 void receiver_update_stats(endpoint_t *receiver);
 void receiver_stop(endpoint_t *receiver);
+void receiver_adjust_volume(endpoint_t *receiver, int stream_idx, int incremental);
+void receiver_adjust_master_volume(endpoint_t *receiver, int incremental);
+void receiver_reset_volume(endpoint_t *receiver);
 #endif
