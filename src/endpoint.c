@@ -259,6 +259,7 @@ pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport,
     if(receiver->streams[i].stream != NULL) {
         tp = pjmedia_stream_get_transport(receiver->streams[i].stream);
         pjmedia_stream_destroy(receiver->streams[i].stream);
+        pjmedia_conf_remove_port(receiver->aout.conf, receiver->streams[i].slot);
         pjmedia_transport_close(tp);
         receiver->streams[i].stream = NULL;
     }
@@ -266,6 +267,7 @@ pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport,
                 receiver->ci, lport, mcast, &receiver->streams[i].stream));
 
     ANSI_CHECK(__FILE__, pjmedia_stream_start(receiver->streams[i].stream));
+
     ANSI_CHECK(__FILE__, pjmedia_stream_get_port(receiver->streams[i].stream, &port));
 
     ANSI_CHECK(__FILE__, pjmedia_conf_add_port(receiver->aout.conf, receiver->pool, port, NULL, &receiver->streams[i].slot));
@@ -309,7 +311,7 @@ void receiver_config_dev_sink(endpoint_t *receiver, int idx) {
 }
 void receiver_start(endpoint_t *receiver) {
     pjmedia_port *port;
-    PJ_LOG(3, (__FILE__, "Receiver Start"));
+    PJ_LOG(2, (__FILE__, "Receiver Start"));
     int i;
     for (i = 0 ; i < receiver->nstreams; i++) {
         CHECK_NULL(__FILE__, receiver->streams[i].stream);
@@ -317,12 +319,12 @@ void receiver_start(endpoint_t *receiver) {
     if( receiver->state == EPS_STOP ) {
         switch (receiver->type) {
         case EPT_FILE:
-            PJ_LOG(3, (__FILE__, "Start"));
+            PJ_LOG(2, (__FILE__, "Start"));
             ANSI_CHECK(__FILE__, pjmedia_master_port_start(receiver->aout.mport));
             receiver->state = EPS_START;
             break;
         case EPT_DEV:
-            PJ_LOG(3, (__FILE__, "Start stream to sound dev"));
+            PJ_LOG(2, (__FILE__, "Start stream to sound dev"));
 
             port = pjmedia_conf_get_master_port(receiver->aout.conf);
             CHECK_NULL(__FILE__, port);
@@ -331,11 +333,11 @@ void receiver_start(endpoint_t *receiver) {
             receiver->state = EPS_START;
             break;
         default:
-            PJ_LOG(3, (__FILE__, "Unknown endpoint type"));
+            PJ_LOG(2, (__FILE__, "Unknown endpoint type"));
         }
     }
     else {
-        PJ_LOG(3, (__FILE__, "Not start"));
+        PJ_LOG(2, (__FILE__, "Not start"));
     }
 }
 
