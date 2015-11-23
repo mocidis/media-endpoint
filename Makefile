@@ -40,9 +40,6 @@ $(RECEIVER_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 $(SRCS:.c=.o): %.o: src/%.c
 	gcc -c -o $@ $< $(CFLAGS)
-$(PLAY_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
 $(C_SRCS:.c=.o): %.o: $(C_DIR)/src/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 
