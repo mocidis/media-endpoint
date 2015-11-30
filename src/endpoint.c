@@ -45,6 +45,11 @@ static pj_status_t create_mstream(pj_pool_t *pool,
     
     ANSI_CHECK(__FILE__, pj_sock_socket(PJ_AF_INET, PJ_SOCK_DGRAM, 0, &si.rtp_sock));
     ANSI_CHECK(__FILE__, pj_sock_socket(PJ_AF_INET, PJ_SOCK_DGRAM, 0, &si.rtcp_sock));
+
+    int optval = 1;
+    ANSI_CHECK(__FILE__, pj_sock_setsockopt(si.rtp_sock, PJ_SOL_SOCKET, PJ_SO_REUSEADDR, &optval, sizeof(optval)));
+    ANSI_CHECK(__FILE__, pj_sock_setsockopt(si.rtcp_sock, PJ_SOL_SOCKET, PJ_SO_REUSEADDR, &optval, sizeof(optval)));
+
     if( local_port > 0 ) {
         setup_addr_with_port(&si.rtp_addr_name.ipv4, local_port);
         ANSI_CHECK(__FILE__, pj_sock_bind(si.rtp_sock, &si.rtp_addr_name.ipv4, sizeof(si.rtp_addr_name.ipv4)));
@@ -115,6 +120,7 @@ void streamer_init(endpoint_t *streamer, pjmedia_endpt *ep, pj_pool_t *pool) {
     endpoint_init(streamer, ep, pool);
     streamer->nstreams = 1;
     streamer->streams = pj_pool_zalloc(streamer->pool, streamer->nstreams * sizeof(endpoint_stream_t));
+
     streamer->streams[0].stream = NULL;
 }
 
