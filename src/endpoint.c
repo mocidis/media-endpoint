@@ -348,7 +348,7 @@ void receiver_update_stats(endpoint_t *receiver) {
     }
 }
 void receiver_stop(endpoint_t *receiver) {
-    PJ_LOG(3, (__FILE__, "Stop"));
+    PJ_LOG(1, (__FILE__, "Stop"));
     if( receiver->state == EPS_START) {
         switch( receiver->type ) {
         case EPT_FILE:
@@ -364,7 +364,7 @@ void receiver_stop(endpoint_t *receiver) {
         }
     }
     else {
-        PJ_LOG(3, (__FILE__, "Not start"));
+        PJ_LOG(1, (__FILE__, "Not start"));
     }
 }
 
