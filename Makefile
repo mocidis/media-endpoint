@@ -3,9 +3,7 @@ include custom.mk
 .PHONY: all clean
 #APP:=pjsua_stream
 #APP:=test-codecs
-#APP:=app-streamer
-#APP:=app-receiver
-APP:=list-devices
+#APP:=list-devices
 #APP:=confbridge
 #APP:=adjust-volume
 STREAMER:=app-streamer
@@ -20,13 +18,13 @@ SRCS:=endpoint.c
 C_DIR:=../common
 C_SRCS:=my-pjlib-utils.c my-pjmedia-utils.c
 
-#CFLAGS:=$(shell pkg-config --cflags libpjproject) -Werror
-CFLAGS:=-DPJ_AUTOCONF=1	-O2 -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1 -I../libs/linux-armv7l/include
+CFLAGS:=$(shell pkg-config --cflags libpjproject) -Werror
+#CFLAGS:=-DPJ_AUTOCONF=1	-O2 -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1 -I../libs/linux-armv7l/include
 CFLAGS+=-I$(C_DIR)/include
 CFLAGS+=-I$(ICS_DIR)/include -I$(Q_DIR)/include -I$(O_DIR)/include
 CFLAGS+=-Iinclude
-#LIBS:=$(shell pkg-config --libs libpjproject)
-LIBS:=-L../libs/linux-armv7l/lib -lpjsua2-arm-none-linux-gnueabi -lstdc++ -lpjsua-arm-none-linux-gnueabi -lpjsip-ua-arm-none-linux-gnueabi -lpjsip-simple-arm-none-linux-gnueabi -lpjsip-arm-none-linux-gnueabi -lpjmedia-codec-arm-none-linux-gnueabi -lpjmedia-arm-none-linux-gnueabi -lpjmedia-videodev-arm-none-linux-gnueabi -lpjmedia-audiodev-arm-none-linux-gnueabi -lpjmedia-arm-none-linux-gnueabi -lpjnath-arm-none-linux-gnueabi -lpjlib-util-arm-none-linux-gnueabi -lsrtp-arm-none-linux-gnueabi -lresample-arm-none-linux-gnueabi -lgsmcodec-arm-none-linux-gnueabi -lspeex-arm-none-linux-gnueabi -lilbccodec-arm-none-linux-gnueabi -lg7221codec-arm-none-linux-gnueabi -lportaudio-arm-none-linux-gnueabi -lpj-arm-none-linux-gnueabi -lm -lrt -lpthread -lasound
+LIBS:=$(shell pkg-config --libs libpjproject)
+#LIBS:=-L../libs/linux-armv7l/lib -lpjsua2-arm-none-linux-gnueabi -lstdc++ -lpjsua-arm-none-linux-gnueabi -lpjsip-ua-arm-none-linux-gnueabi -lpjsip-simple-arm-none-linux-gnueabi -lpjsip-arm-none-linux-gnueabi -lpjmedia-codec-arm-none-linux-gnueabi -lpjmedia-arm-none-linux-gnueabi -lpjmedia-videodev-arm-none-linux-gnueabi -lpjmedia-audiodev-arm-none-linux-gnueabi -lpjmedia-arm-none-linux-gnueabi -lpjnath-arm-none-linux-gnueabi -lpjlib-util-arm-none-linux-gnueabi -lsrtp-arm-none-linux-gnueabi -lresample-arm-none-linux-gnueabi -lgsmcodec-arm-none-linux-gnueabi -lspeex-arm-none-linux-gnueabi -lilbccodec-arm-none-linux-gnueabi -lg7221codec-arm-none-linux-gnueabi -lportaudio-arm-none-linux-gnueabi -lpj-arm-none-linux-gnueabi -lm -lrt -lpthread -lasound
 
 
 all: $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)

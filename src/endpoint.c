@@ -362,6 +362,7 @@ void receiver_stop(endpoint_t *receiver) {
             receiver->state = EPS_STOP;
             break;
         case EPT_DEV: 
+            //pjmedia_stream_destroy(receiver->streams[i].stream);
             ANSI_CHECK(__FILE__, pjmedia_snd_port_disconnect(receiver->aout.snd_port));
             receiver->state = EPS_STOP;
             break;
