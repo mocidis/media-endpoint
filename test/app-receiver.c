@@ -25,8 +25,8 @@ int main() {
     pjmedia_codec_g711_init(ep);
 
     //receiver_init(&receiver, ep, pool);
-    receiver_init(&receiver, ep, pool, 2);
-    receiver_config_dev_sink(&receiver, -1);
+    receiver_init(&receiver, ep, pool, 3);
+    receiver_config_dev_sink(&receiver, 7);
     receiver_config_stream(&receiver, mcast, lport, 0);
     receiver_start(&receiver);
 

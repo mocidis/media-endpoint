@@ -79,6 +79,7 @@ static pj_status_t create_mstream(pj_pool_t *pool,
 
     CHECK_R(__FILE__, pjmedia_transport_udp_attach(endpt, NULL, &si, 0, &transport));
     CHECK_R(__FILE__, pjmedia_stream_create(endpt, pool, &stream_info, transport, NULL, stream));
+    printf("stream = %p\n", stream);
     return PJ_SUCCESS;
 }
 static pj_status_t ostream_create(pj_pool_t *pool, 
