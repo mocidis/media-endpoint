@@ -17,25 +17,18 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-#if 0
-    if (argc < 4) {
-        usage(argv[0]);
-    }
-    int lport, rport;
-    char *rhost;
-
-    lport = atoi(argv[1]);
-    rport = atoi(argv[3]);
-    rhost = argv[2];
-#endif
-
-#if 1
-    int lport = 2345;
-    //int lport = -1;
-    char *file = "NHP-mono.wav";
+    int rport = 4321;
     char *rhost = "239.1.0.1";
     //char *rhost = "192.168.2.50";
-    int rport = 4321;
+#if 1
+    int lport;
+
+    lport = atoi(argv[1]);
+    char *file = argv[2];
+#endif
+
+#if 0
+    int lport = 2345;
 #endif
   
     pj_init();
@@ -48,10 +41,11 @@ int main(int argc, char *argv[]) {
 
     streamer_init(&streamer, streamer.ep, streamer.pool);
     streamer_config_stream(&streamer, lport, rhost, rport);
-    streamer_config_file_source(&streamer, argv[1]);
+    streamer_config_file_source(&streamer, file);
     //streamer_config_dev_source(&streamer, 2);
     streamer_start(&streamer);
-    
+    fprintf(stdout, "Local port: %d, File: %s\n", lport, file);
+
     while(1) {
         fprintf(stdout, "s=Stop - r=Resume: ");
         fflush(stdout);

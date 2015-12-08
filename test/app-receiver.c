@@ -15,6 +15,7 @@ int main() {
     int lport = 4321;
     char *file = "NHP-mono.wav";
     char *mcast = "239.1.0.1";
+    char *mcast2 = "239.1.0.2";
 
     pj_init();
 
@@ -25,8 +26,9 @@ int main() {
     pjmedia_codec_g711_init(ep);
 
     //receiver_init(&receiver, ep, pool);
-    receiver_init(&receiver, ep, pool, 2);
+    receiver_init(&receiver, ep, pool, 3);
     receiver_config_stream(&receiver, mcast, lport, 0);
+    receiver_config_stream(&receiver, mcast2, lport, 1);
     receiver_config_dev_sink(&receiver, 2);
     receiver_start(&receiver);
 
