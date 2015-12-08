@@ -26,8 +26,8 @@ int main() {
 
     //receiver_init(&receiver, ep, pool);
     receiver_init(&receiver, ep, pool, 2);
-    receiver_config_dev_sink(&receiver, 1);
     receiver_config_stream(&receiver, mcast, lport, 0);
+    receiver_config_dev_sink(&receiver, 2);
     receiver_start(&receiver);
 
     int volume;
@@ -43,7 +43,7 @@ int main() {
         switch(temp[0]) {
         case 's':
         case 'S':
-            receiver_stop(&receiver);
+            receiver_stop(&receiver, 0);
             break;
         case 'r':
         case 'R':
@@ -51,13 +51,13 @@ int main() {
             break;
         case '+':
             lport++;
-            receiver_stop(&receiver);
+            receiver_stop(&receiver, 0);
             receiver_config_stream(&receiver, mcast, lport, 0);
             receiver_start(&receiver);
             break;
         case '-':
             lport--;
-            receiver_stop(&receiver);
+            receiver_stop(&receiver, 0);
             receiver_config_stream(&receiver, mcast, lport, 0);
             receiver_start(&receiver);
             break;
