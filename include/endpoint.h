@@ -73,7 +73,7 @@ void receiver_config_file_sink(endpoint_t *receiver, char *file_name);
 void receiver_config_dev_sink(endpoint_t *receiver, int idx);
 void receiver_start(endpoint_t *receiver);
 void receiver_update_stats(endpoint_t *receiver);
-void receiver_stop(endpoint_t *receiver);
+void receiver_stop(endpoint_t *receiver, int idx);
 void receiver_adjust_volume(endpoint_t *receiver, int stream_idx, int incremental);
 void receiver_adjust_master_volume(endpoint_t *receiver, int incremental);
 void receiver_reset_volume(endpoint_t *receiver);

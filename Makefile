@@ -3,9 +3,6 @@ include custom.mk
 .PHONY: all clean
 #APP:=pjsua_stream
 #APP:=test-codecs
-#APP:=app-streamer
-#APP:=app-receiver
-#APP:=list-devices
 #APP:=confbridge
 #APP:=adjust-volume
 STREAMER:=app-streamer
