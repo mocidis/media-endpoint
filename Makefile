@@ -53,5 +53,5 @@ $(C_SRCS:.c=.o): %.o: $(C_DIR)/src/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 clean:
-	rm -fr *.o $(STREAMER) $(RECEIVER) $(APP)
+	rm -fr *.o $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
 
