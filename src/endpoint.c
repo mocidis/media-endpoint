@@ -79,6 +79,7 @@ static pj_status_t create_mstream(pj_pool_t *pool,
 
     CHECK_R(__FILE__, pjmedia_transport_udp_attach(endpt, NULL, &si, 0, &transport));
     CHECK_R(__FILE__, pjmedia_stream_create(endpt, pool, &stream_info, transport, NULL, stream));
+    printf(" =================stream = %p\n", stream);
     return PJ_SUCCESS;
 }
 static pj_status_t ostream_create(pj_pool_t *pool, 
@@ -96,7 +97,7 @@ static pj_status_t mistream_create(pj_pool_t *pool, pjmedia_endpt *endpt,
                                    const pjmedia_codec_info *ci, int lport,
                                    char *mcast, pjmedia_stream **stream) 
 {
-    return create_mstream(pool, endpt, ci, PJMEDIA_DIR_DECODING, lport, mcast, 0, 1, 1, stream);
+    return create_mstream(pool, endpt, ci, PJMEDIA_DIR_DECODING, lport, mcast, 0, 0, 1, stream);
 }
 
 static void endpoint_init(endpoint_t *eep, pjmedia_endpt *ep, pj_pool_t *pool) {
@@ -353,8 +354,10 @@ void receiver_update_stats(endpoint_t *receiver) {
         endpoint_stream_update_stats(&receiver->streams[i]); 
     }
 }
-void receiver_stop(endpoint_t *receiver) {
+void receiver_stop(endpoint_t *receiver, int i) {
     PJ_LOG(1, (__FILE__, "Stop"));
+    pjmedia_transport *tp;
+
     if( receiver->state == EPS_START) {
         switch( receiver->type ) {
         case EPT_FILE:
@@ -362,8 +365,14 @@ void receiver_stop(endpoint_t *receiver) {
             receiver->state = EPS_STOP;
             break;
         case EPT_DEV: 
-            //pjmedia_stream_destroy(receiver->streams[i].stream);
-            ANSI_CHECK(__FILE__, pjmedia_snd_port_disconnect(receiver->aout.snd_port));
+            if(receiver->streams[i].stream != NULL) {
+                tp = pjmedia_stream_get_transport(receiver->streams[i].stream);
+                pjmedia_stream_destroy(receiver->streams[i].stream);
+                pjmedia_conf_remove_port(receiver->aout.conf, receiver->streams[i].slot);
+                pjmedia_transport_close(tp);
+                receiver->streams[i].stream = NULL;
+            }
+            //ANSI_CHECK(__FILE__, pjmedia_snd_port_disconnect(receiver->aout.snd_port));
             receiver->state = EPS_STOP;
             break;
         default:
