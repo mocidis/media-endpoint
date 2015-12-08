@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     pjmedia_codec_g711_init(streamer.ep);
 
     streamer_init(&streamer, streamer.ep, streamer.pool);
-    streamer_config_dev_source(&streamer, 4);
+    streamer_config_dev_source(&streamer, 2);
     streamer_config_stream(&streamer, lport, rhost, rport);
     streamer_start(&streamer);
     
