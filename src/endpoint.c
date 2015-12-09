@@ -275,6 +275,7 @@ pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport,
         pjmedia_transport_close(tp);
         receiver->streams[i].stream = NULL;
     }
+
     CHECK_R(__FILE__, mistream_create(receiver->pool, receiver->ep,\
                 receiver->ci, lport, mcast, &receiver->streams[i].stream));
 
@@ -285,6 +286,7 @@ pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport,
     ANSI_CHECK(__FILE__, pjmedia_conf_add_port(receiver->aout.conf, receiver->pool, port, NULL, &receiver->streams[i].slot));
     pjmedia_conf_connect_port(receiver->aout.conf, receiver->streams[i].slot, 0, 0);
 
+    PJ_LOG(1, (__FILE__,"======= CONFIG STREAM: (Stream idx: %d - Slot: %d) ======\n", i, receiver->streams[i].slot));
     return PJ_SUCCESS;
 }
 
@@ -412,4 +414,12 @@ void receiver_adjust_master_volume(endpoint_t *receiver, int incremental) {
 void receiver_reset_volume(endpoint_t *receiver) {
     CHECK_FALSE(__FILE__, receiver->type == EPT_DEV);
     receiver_volume_inc(receiver->aout.snd_port, 50);
+}
+
+void receiver_dump_streams(endpoint_t *receiver) {
+    int i;
+    receiver_update_stats(receiver);
+    for (i = 0; i < receiver->nstreams; i++) {
+        PJ_LOG(1,(__FILE__, "SLOT: %d, pkt=%d\n", receiver->streams[i].slot, receiver->streams[i].drop.pkt)); 
+    }
 }
