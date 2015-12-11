@@ -26,7 +26,7 @@ int main() {
 
     //receiver_init(&receiver, ep, pool);
     receiver_init(&receiver, ep, pool, 2);
-    receiver_config_dev_sink(&receiver, 1);
+    receiver_config_dev_sink(&receiver, 3);
     receiver_config_stream(&receiver, mcast, lport, 0);
     receiver_start(&receiver);
 
