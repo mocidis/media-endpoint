@@ -79,6 +79,7 @@ static pj_status_t create_mstream(pj_pool_t *pool,
 
     CHECK_R(__FILE__, pjmedia_transport_udp_attach(endpt, NULL, &si, 0, &transport));
     CHECK_R(__FILE__, pjmedia_stream_create(endpt, pool, &stream_info, transport, NULL, stream));
+    SHOW_LOG(3, "Stream: %p\n", stream);
     return PJ_SUCCESS;
 }
 static pj_status_t ostream_create(pj_pool_t *pool, 
@@ -96,7 +97,7 @@ static pj_status_t mistream_create(pj_pool_t *pool, pjmedia_endpt *endpt,
                                    const pjmedia_codec_info *ci, int lport,
                                    char *mcast, pjmedia_stream **stream) 
 {
-    return create_mstream(pool, endpt, ci, PJMEDIA_DIR_DECODING, lport, mcast, 0, 1, 1, stream);
+    return create_mstream(pool, endpt, ci, PJMEDIA_DIR_DECODING, lport, mcast, 0, 0, 1, stream);
 }
 
 static void endpoint_init(endpoint_t *eep, pjmedia_endpt *ep, pj_pool_t *pool) {
@@ -140,15 +141,21 @@ pj_status_t streamer_config_stream(endpoint_t *streamer, int lport, char *rhost,
 void streamer_config_file_source(endpoint_t *streamer, char *file_name) {
     pjmedia_port *port, *fport;
     
+    PJ_LOG(3, (__FILE__, "File name: %s\n", file_name));    
+
     ANSI_CHECK(__FILE__, pjmedia_wav_player_port_create(streamer->pool, file_name, 0, 0, -1, &fport));
+    
+    PJ_LOG(3,(__FILE__, "File port = %p\n", fport));
 
     if(streamer->streams[0].stream != NULL) {
+        PJ_LOG(3, (__FILE__, "=======Stream not NULL======="));
         ANSI_CHECK(__FILE__, pjmedia_stream_get_port(streamer->streams[0].stream, &port));
         ANSI_CHECK(__FILE__, pjmedia_master_port_create(streamer->pool,
                                 fport, 
                                 port,
                                 0,
                                 &streamer->ain.mport));
+        PJ_LOG(3, (__FILE__, "Master port: %p", streamer->ain.mport));
     }
     streamer->type = EPT_FILE;
     streamer->state = EPS_STOP;
@@ -269,6 +276,7 @@ pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport,
         pjmedia_transport_close(tp);
         receiver->streams[i].stream = NULL;
     }
+
     CHECK_R(__FILE__, mistream_create(receiver->pool, receiver->ep,\
                 receiver->ci, lport, mcast, &receiver->streams[i].stream));
 
@@ -279,6 +287,7 @@ pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport,
     ANSI_CHECK(__FILE__, pjmedia_conf_add_port(receiver->aout.conf, receiver->pool, port, NULL, &receiver->streams[i].slot));
     pjmedia_conf_connect_port(receiver->aout.conf, receiver->streams[i].slot, 0, 0);
 
+    PJ_LOG(1, (__FILE__,"======= CONFIG STREAM: (Stream idx: %d - Slot: %d) ======\n", i, receiver->streams[i].slot));
     return PJ_SUCCESS;
 }
 
@@ -306,6 +315,9 @@ void receiver_config_file_sink(endpoint_t *receiver, char *file_name) {
     receiver->state = EPS_STOP;
 }
 void receiver_config_dev_sink(endpoint_t *receiver, int idx) {
+    SHOW_LOG(3, "clock rate:%d, channel: %d, spf:%d, idx: %d\n", receiver->ci->clock_rate,
+                    receiver->ci->channel_cnt,
+                    receiver->ci->clock_rate * receiver->ci->channel_cnt * 20 / 1000, idx);
     ANSI_CHECK(__FILE__, pjmedia_snd_port_create_player(receiver->pool, idx,
                     receiver->ci->clock_rate,
                     receiver->ci->channel_cnt,
@@ -353,8 +365,10 @@ void receiver_update_stats(endpoint_t *receiver) {
         endpoint_stream_update_stats(&receiver->streams[i]); 
     }
 }
-void receiver_stop(endpoint_t *receiver) {
+void receiver_stop(endpoint_t *receiver, int i) {
     PJ_LOG(1, (__FILE__, "Stop"));
+    pjmedia_transport *tp;
+
     if( receiver->state == EPS_START) {
         switch( receiver->type ) {
         case EPT_FILE:
@@ -362,8 +376,14 @@ void receiver_stop(endpoint_t *receiver) {
             receiver->state = EPS_STOP;
             break;
         case EPT_DEV: 
-            //pjmedia_stream_destroy(receiver->streams[i].stream);
-            ANSI_CHECK(__FILE__, pjmedia_snd_port_disconnect(receiver->aout.snd_port));
+            if(receiver->streams[i].stream != NULL) {
+                tp = pjmedia_stream_get_transport(receiver->streams[i].stream);
+                pjmedia_stream_destroy(receiver->streams[i].stream);
+                pjmedia_conf_remove_port(receiver->aout.conf, receiver->streams[i].slot);
+                pjmedia_transport_close(tp);
+                receiver->streams[i].stream = NULL;
+            }
+            //ANSI_CHECK(__FILE__, pjmedia_snd_port_disconnect(receiver->aout.snd_port));
             receiver->state = EPS_STOP;
             break;
         default:
@@ -398,4 +418,12 @@ void receiver_adjust_master_volume(endpoint_t *receiver, int incremental) {
 void receiver_reset_volume(endpoint_t *receiver) {
     CHECK_FALSE(__FILE__, receiver->type == EPT_DEV);
     receiver_volume_inc(receiver->aout.snd_port, 50);
+}
+
+void receiver_dump_streams(endpoint_t *receiver) {
+    int i;
+    receiver_update_stats(receiver);
+    for (i = 0; i < receiver->nstreams; i++) {
+        PJ_LOG(1,(__FILE__, "SLOT: %d, pkt=%d\n", receiver->streams[i].slot, receiver->streams[i].drop.pkt)); 
+    }
 }

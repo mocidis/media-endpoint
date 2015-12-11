@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-    int rport = 4321;
-    char *rhost = "239.1.0.1";
+    int rport = 5321;
+    char *rhost = "239.1.0.2";
     //char *rhost = "192.168.2.50";
 
     if (argc < 3) {
@@ -50,7 +50,8 @@ int main(int argc, char *argv[]) {
     //streamer_config_dev_source(&streamer, 2);
     streamer_start(&streamer);
     fprintf(stdout, "Local port: %d, File: %s\n", lport, file);
-
+    
+   
     while(1) {
         fprintf(stdout, "s=Stop - r=Resume: ");
         fflush(stdout);
