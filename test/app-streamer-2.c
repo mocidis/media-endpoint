@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
     //streamer_config_dev_source(&streamer, 2);
     streamer_start(&streamer);
     fprintf(stdout, "Local port: %d, File: %s\n", lport, file);
-
+    
+   
     while(1) {
         fprintf(stdout, "s=Stop - r=Resume: ");
         fflush(stdout);

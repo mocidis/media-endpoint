@@ -79,7 +79,6 @@ static pj_status_t create_mstream(pj_pool_t *pool,
 
     CHECK_R(__FILE__, pjmedia_transport_udp_attach(endpt, NULL, &si, 0, &transport));
     CHECK_R(__FILE__, pjmedia_stream_create(endpt, pool, &stream_info, transport, NULL, stream));
-    printf(" =================stream = %p\n", stream);
     return PJ_SUCCESS;
 }
 static pj_status_t ostream_create(pj_pool_t *pool, 
@@ -141,15 +140,21 @@ pj_status_t streamer_config_stream(endpoint_t *streamer, int lport, char *rhost,
 void streamer_config_file_source(endpoint_t *streamer, char *file_name) {
     pjmedia_port *port, *fport;
     
+    PJ_LOG(3, (__FILE__, "File name: %s\n", file_name));    
+
     ANSI_CHECK(__FILE__, pjmedia_wav_player_port_create(streamer->pool, file_name, 0, 0, -1, &fport));
+    
+    PJ_LOG(3,(__FILE__, "File port = %p\n", fport));
 
     if(streamer->streams[0].stream != NULL) {
+        PJ_LOG(3, (__FILE__, "=======Stream not NULL======="));
         ANSI_CHECK(__FILE__, pjmedia_stream_get_port(streamer->streams[0].stream, &port));
         ANSI_CHECK(__FILE__, pjmedia_master_port_create(streamer->pool,
                                 fport, 
                                 port,
                                 0,
                                 &streamer->ain.mport));
+        PJ_LOG(3, (__FILE__, "Master port: %p", streamer->ain.mport));
     }
     streamer->type = EPT_FILE;
     streamer->state = EPS_STOP;

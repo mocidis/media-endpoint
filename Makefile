@@ -8,9 +8,11 @@ APP:=list-devices
 #APP:=adjust-volume
 STREAMER:=app-streamer
 RECEIVER:=app-receiver
+STREAMER2:=app-streamer-2
 
 SRC_DIR:=.
 STREAMER_SRCS:=$(STREAMER).c
+STREAMER_SRCS2:=$(STREAMER2).c
 RECEIVER_SRCS:=$(RECEIVER).c
 APP_SRCS:=$(APP).c
 SRCS:=endpoint.c
@@ -31,6 +33,8 @@ all: $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
 
 $(STREAMER): $(STREAMER_SRCS:.c=.o) $(C_SRCS:.c=.o) $(SRCS:.c=.o)
 	$(CC) -o $@ $^ $(LIBS)
+$(STREAMER2): $(STREAMER_SRCS2:.c=.o) $(C_SRCS:.c=.o) $(SRCS:.c=.o)
+	$(CC) -o $@ $^ $(LIBS)
 $(RECEIVER): $(RECEIVER_SRCS:.c=.o) $(C_SRCS:.c=.o) $(SRCS:.c=.o)
 	$(CC) -o $@ $^ $(LIBS)
 $(APP): $(APP_SRCS:.c=.o) $(C_SRCS:.c=.o)
@@ -38,6 +42,8 @@ $(APP): $(APP_SRCS:.c=.o) $(C_SRCS:.c=.o)
 $(APP_SRCS:.c=.o): %.o: test/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 $(STREAMER_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+$(STREAMER_SRCS2:.c=.o): %.o: $(SRC_DIR)/test/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 $(RECEIVER_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -47,5 +53,5 @@ $(C_SRCS:.c=.o): %.o: $(C_DIR)/src/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 clean:
-	rm -fr *.o $(STREAMER) $(RECEIVER) $(APP)
+	rm -fr *.o $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
 
