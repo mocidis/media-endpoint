@@ -3,7 +3,7 @@ include custom.mk
 .PHONY: all clean
 #APP:=pjsua_stream
 #APP:=test-codecs
-#APP:=list-devices
+APP:=list-devices
 #APP:=confbridge
 #APP:=confsample
 #APP:=adjust-volume
@@ -56,7 +56,7 @@ JSONC_DIR:=../json-c/output
 HT_DIR:=../hash-table
 HT_SRCS:=hash-table.c
 
-CFLAGS:=-std=c99 $(shell pkg-config --cflags libpjproject) -fms-extensions
+CFLAGS:=-I$(LIBS_DIR)/include
 CFLAGS+=-I$(ICS_DIR)/include -I$(Q_DIR)/include -I$(O_DIR)/include
 CFLAGS+=-I$(C_DIR)/include
 CFLAGS+=-I../json-c/output/include/json-c
@@ -66,11 +66,6 @@ CFLAGS+=-I$(NODE_DIR)/include
 CFLAGS+=-I$(EP_DIR)/include
 CFLAGS+=-I$(HT_DIR)/include
 CFLAGS+=-D__ICS_INTEL__
-
-LIBS:=$(shell pkg-config --libs libpjproject) ../json-c/output/lib/libjson-c.a -lpthread
-
-#LIBS:=-L../libs/linux-armv7l/lib -lpjsua2-arm-none-linux-gnueabi -lstdc++ -lpjsua-arm-none-linux-gnueabi -lpjsip-ua-arm-none-linux-gnueabi -lpjsip-simple-arm-none-linux-gnueabi -lpjsip-arm-none-linux-gnueabi -lpjmedia-codec-arm-none-linux-gnueabi -lpjmedia-arm-none-linux-gnueabi -lpjmedia-videodev-arm-none-linux-gnueabi -lpjmedia-audiodev-arm-none-linux-gnueabi -lpjmedia-arm-none-linux-gnueabi -lpjnath-arm-none-linux-gnueabi -lpjlib-util-arm-none-linux-gnueabi -lsrtp-arm-none-linux-gnueabi -lresample-arm-none-linux-gnueabi -lgsmcodec-arm-none-linux-gnueabi -lspeex-arm-none-linux-gnueabi -lilbccodec-arm-none-linux-gnueabi -lg7221codec-arm-none-linux-gnueabi -lportaudio-arm-none-linux-gnueabi -lpj-arm-none-linux-gnueabi -lm -lrt -lpthread -lasound
-
 
 all: gen-gm gen-gmc gen-adv gen-gb $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
 
