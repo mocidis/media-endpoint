@@ -90,14 +90,14 @@ static pj_status_t ostream_create(pj_pool_t *pool,
                 int remote_port,
                 pjmedia_stream **stream) 
 {
-    return create_mstream(pool, endpt, codec_info, PJMEDIA_DIR_ENCODING, local_port, remote_addr, remote_port, 1, 1, stream);
+    return create_mstream(pool, endpt, codec_info, PJMEDIA_DIR_ENCODING, local_port, remote_addr, remote_port, 0, 0, stream);
 }
 
 static pj_status_t mistream_create(pj_pool_t *pool, pjmedia_endpt *endpt, 
                                    const pjmedia_codec_info *ci, int lport,
                                    char *mcast, pjmedia_stream **stream) 
 {
-    return create_mstream(pool, endpt, ci, PJMEDIA_DIR_DECODING, lport, mcast, 0, 1, 1, stream);
+    return create_mstream(pool, endpt, ci, PJMEDIA_DIR_DECODING, lport, mcast, 0, 0, 0, stream);
 }
 
 static void endpoint_init(endpoint_t *eep, pjmedia_endpt *ep, pj_pool_t *pool) {

@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     }
 
     int rport = 4321;
-    char *rhost = "239.1.0.1";
+    char *rhost = "237.1.0.1";
     //char *rhost = "192.168.2.50";
 
     char *file = argv[2];

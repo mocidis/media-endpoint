@@ -22,17 +22,17 @@ int main(int argc, char *argv[]) {
     //char *rhost = "192.168.2.50";
 
     if (argc < 3) {
-        usage(argv[0]);
+        //usage(argv[0]);
     }
 
-#if 1
+#if 0
     int lport;
 
     lport = atoi(argv[1]);
     char *file = argv[2];
 #endif
 
-#if 0
+#if 1
     int lport = 2345;
 #endif
   
@@ -46,10 +46,10 @@ int main(int argc, char *argv[]) {
 
     streamer_init(&streamer, streamer.ep, streamer.pool);
     streamer_config_stream(&streamer, lport, rhost, rport);
-    streamer_config_file_source(&streamer, file);
-    //streamer_config_dev_source(&streamer, 2);
+    //streamer_config_file_source(&streamer, file);
+    streamer_config_dev_source(&streamer, 2);
     streamer_start(&streamer);
-    fprintf(stdout, "Local port: %d, File: %s\n", lport, file);
+    //fprintf(stdout, "Local port: %d, File: %s\n", lport, file);
 
     while(1) {
         fprintf(stdout, "s=Stop - r=Resume: ");

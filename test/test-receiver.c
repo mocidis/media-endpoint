@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     }
 
     int lport = 4321;
-    char *mcast = "239.1.0.1";
+    char *mcast = "237.1.0.1";
 
     int dev_idx;
 
