@@ -3,12 +3,12 @@
 #include "endpoint.h"
 
 endpoint_t streamer;
-/*
+
 void usage(char *app) {
-    printf("%s <lport> <rhost> <rport>\n", app);
+    printf("%s <lport> <file_name>\n", app);
     exit(-1);
 }
-*/
+
 int main(int argc, char *argv[]) {
     char temp[10];
     pj_caching_pool cp;
@@ -17,9 +17,14 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-    int rport = 4321;
-    char *rhost = "239.1.0.1";
+    int rport = 5321;
+    char *rhost = "239.1.0.2";
     //char *rhost = "192.168.2.50";
+
+    if (argc < 3) {
+        usage(argv[0]);
+    }
+
 #if 1
     int lport;
 

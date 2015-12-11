@@ -13,13 +13,14 @@ int main() {
     pjmedia_codec_info *ci;
 
     int lport = 4321;
+    int lport2 = 5321;
     char *file = "NHP-mono.wav";
     char *mcast = "239.1.0.1";
     char *mcast2 = "239.1.0.2";
 
     pj_init();
 
-    pj_log_set_level(5);
+    pj_log_set_level(2);
     pj_caching_pool_init(&cp, NULL, 1024);
     pool = pj_pool_create(&cp.factory, "pool1", 1024, 1024, NULL);
     pjmedia_endpt_create(&cp.factory, NULL, 1, &ep);
@@ -27,14 +28,15 @@ int main() {
 
     //receiver_init(&receiver, ep, pool);
     receiver_init(&receiver, ep, pool, 3);
-    receiver_config_stream(&receiver, mcast, lport, 0);
-    receiver_config_stream(&receiver, mcast2, lport, 1);
     receiver_config_dev_sink(&receiver, 2);
+    receiver_config_stream(&receiver, mcast, lport, 0);
+    receiver_config_stream(&receiver, mcast2, lport2, 1);
     receiver_start(&receiver);
 
     int volume;
     pjmedia_aud_stream *aud_stream;
     unsigned vol;
+    int idx;
 
     while(1) {
         fprintf(stdout, "s=Stop - r=Resume:\n");
@@ -70,9 +72,15 @@ int main() {
                             receiver.streams[0].drop.pkt, receiver.streams[0].drop.lost, receiver.streams[0].drop.discard);
             break;
         case 'm':
-            vol = atoi(&temp[3]);
+            vol = atoi(&temp[4]);
             vol = (vol * 256)/100 - 128;
-            receiver_adjust_volume(&receiver, 0, vol);         
+            idx = atoi(&temp[2]);
+
+            printf("vol = %d, idx = %d\n", vol, idx);           
+            receiver_adjust_volume(&receiver, idx, vol);
+            break;
+        case 'd':
+            receiver_dump_streams(&receiver);
             break;
         }
         pj_thread_sleep(5*100);

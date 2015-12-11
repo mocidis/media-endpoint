@@ -28,9 +28,10 @@ int main() {
 
     pjmedia_snd_port_create_rec(pool, 0, 8000, 1, 160, 16, 0, &mic);
 
-    //pjmedia_wav_player_port_create(pool, "NHP-mono.wav", 0, 0, 0, &fp);
+    pjmedia_wav_player_port_create(pool, "NHP-mono-pcm-s16le.wav", 0, 0, 0, &fp);
 
-    //pjmedia_wav_writer_port_create(pool, "sample.wav", 8000, 1, 160, 16, 0, 0, &fp);
+    //pjmedia_wav_writer_port_create(pool, "vnt.wav", 8000, 1, 160, 16, 0, 0, &fp);
+
     fp = pjmedia_snd_port_get_port(mic);
     pjmedia_conf_add_port(conf, pool, fp, NULL, &slot);
     pjmedia_conf_connect_port(conf, slot, 0, 0);
