@@ -413,11 +413,18 @@ void receiver_adjust_volume(endpoint_t *receiver, int stream_idx, int incrementa
 }
 void receiver_adjust_master_volume(endpoint_t *receiver, int incremental) {
     CHECK_FALSE(__FILE__, receiver->type == EPT_DEV);
-    receiver_volume_inc(receiver->aout.snd_port, incremental);
+
+    incremental = (incremental < -128)?(-128):incremental;
+    ANSI_CHECK(__FILE__, pjmedia_conf_adjust_tx_level(receiver->aout.conf, 0, incremental));
+
+    //receiver_volume_inc(receiver->aout.snd_port, incremental);
 }
 void receiver_reset_volume(endpoint_t *receiver) {
     CHECK_FALSE(__FILE__, receiver->type == EPT_DEV);
-    receiver_volume_inc(receiver->aout.snd_port, 50);
+
+    ANSI_CHECK(__FILE__, pjmedia_conf_adjust_tx_level(receiver->aout.conf, 0, 0));
+
+    //receiver_volume_inc(receiver->aout.snd_port, 50);
 }
 
 void receiver_dump_streams(endpoint_t *receiver) {

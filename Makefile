@@ -12,7 +12,7 @@ APP:=list-devices
 #RECEIVER:=app-receiver
 #STREAMER2:=app-streamer-2
 
-STREAMER:=test-streamer
+#STREAMER:=test-streamer
 RECEIVER:=test-receiver
 
 SRC_DIR:=.

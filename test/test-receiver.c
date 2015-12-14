@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     int lport = 4321;
     char *mcast = "237.1.0.1";
 
-    int dev_idx;
+    int dev_idx, vol;
 
     pj_init();
 
@@ -44,6 +44,32 @@ int main(int argc, char *argv[]) {
     receiver_start(&receiver);
 
     while(1) {
+        fprintf(stdout, "s=Stop - r=Resume:\n");
+        fflush(stdout);
+        if (fgets(temp, sizeof(temp), stdin) == NULL)
+            exit(-1);
+        fprintf(stdout, "%s\n",temp);
+        switch(temp[0]) {
+            case 'm':
+            dev_idx = atoi(&temp[2]);
+            vol = atoi(&temp[4]);
+            vol = (vol * 256)/100 - 128;
+
+            printf("vol = %d, idx = %d\n", vol, dev_idx);           
+            receiver_adjust_volume(&receiver, dev_idx, vol);
+            break;
+        case 'd':
+            receiver_dump_streams(&receiver);
+            break;
+        case 'v':
+            vol = atoi(&temp[4]);
+            vol = (vol * 256)/100 - 128;
+
+            printf("vol = %d\n", vol);           
+            receiver_adjust_master_volume(&receiver, vol);
+            break;
+        }
+
         pj_thread_sleep(5*100);
     }
 

@@ -72,15 +72,25 @@ int main() {
                             receiver.streams[0].drop.pkt, receiver.streams[0].drop.lost, receiver.streams[0].drop.discard);
             break;
         case 'm':
+            idx = atoi(&temp[2]);
             vol = atoi(&temp[4]);
             vol = (vol * 256)/100 - 128;
-            idx = atoi(&temp[2]);
 
             printf("vol = %d, idx = %d\n", vol, idx);           
             receiver_adjust_volume(&receiver, idx, vol);
             break;
         case 'd':
             receiver_dump_streams(&receiver);
+            break;
+        case '1':
+            vol = atoi(&temp[2]);
+            vol = (vol * 256)/100 - 128;
+
+            printf("vol = %d\n", vol);           
+            receiver_adjust_master_volume(&receiver, vol);
+            break;
+        case '2':
+            receiver_reset_volume(&receiver);
             break;
         }
         pj_thread_sleep(5*100);
