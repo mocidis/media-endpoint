@@ -332,7 +332,7 @@ void receiver_start(endpoint_t *receiver) {
     PJ_LOG(2, (__FILE__, "Receiver Start"));
     int i;
     for (i = 0 ; i < receiver->nstreams; i++) {
-        CHECK_NULL(__FILE__, receiver->streams[i].stream);
+        //CHECK_NULL(__FILE__, receiver->streams[i].stream); //NOTE
     }
     if( receiver->state == EPS_STOP ) {
         switch (receiver->type) {
