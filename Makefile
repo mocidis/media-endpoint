@@ -51,15 +51,13 @@ EP_SRCS:=endpoint.c
 GEN_DIR:=gen
 GEN_SRCS:=gm-client.c gmc-server.c adv-server.c gb-server.c
 
-JSONC_DIR:=../json-c/output
-
 HT_DIR:=../hash-table
 HT_SRCS:=hash-table.c
 
 CFLAGS+=-I$(LIBS_DIR)/include
+CFLAGS+=-I$(LIBS_DIR)/include/json-c
 CFLAGS+=-I$(ICS_DIR)/include -I$(Q_DIR)/include -I$(O_DIR)/include
 CFLAGS+=-I$(C_DIR)/include
-CFLAGS+=-I../json-c/output/include/json-c
 CFLAGS+=-I$(PROTOCOLS_DIR)/include
 CFLAGS+=-I$(GEN_DIR)
 CFLAGS+=-I$(NODE_DIR)/include
@@ -126,4 +124,5 @@ $(HT_SRCS:.c=.o) : %.o : $(HT_DIR)/src/%.c
 
 clean:
 	rm -fr *.o $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
+	rm -rf gen*
 
