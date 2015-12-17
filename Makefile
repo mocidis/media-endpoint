@@ -54,6 +54,7 @@ GEN_SRCS:=gm-client.c gmc-server.c adv-server.c gb-server.c
 HT_DIR:=../hash-table
 HT_SRCS:=hash-table.c
 
+CFLAGS:=-DPJ_AUTOCONF=1 -O2 -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1 -fms-extensions
 CFLAGS+=-I$(LIBS_DIR)/include
 CFLAGS+=-I$(LIBS_DIR)/include/json-c
 CFLAGS+=-I$(ICS_DIR)/include -I$(Q_DIR)/include -I$(O_DIR)/include
@@ -88,39 +89,39 @@ gen-gb: $(PROTOCOL_DIR)/$(GB_P)
 	touch $@
 
 $(STREAMER): $(STREAMER_SRCS:.c=.o) $(C_SRCS:.c=.o) $(SRCS:.c=.o)
-	gcc -o $@ $^ $(LIBS)
+	$(CROSS_TOOL) -o $@ $^ $(LIBS)
 $(STREAMER2): $(STREAMER_SRCS2:.c=.o) $(C_SRCS:.c=.o) $(SRCS:.c=.o)
-	gcc -o $@ $^ $(LIBS)
+	$(CROSS_TOOL) -o $@ $^ $(LIBS)
 $(RECEIVER): $(RECEIVER_SRCS:.c=.o) $(C_SRCS:.c=.o) $(SRCS:.c=.o)
-	gcc -o $@ $^ $(LIBS)
+	$(CROSS_TOOL) -o $@ $^ $(LIBS)
 $(APP): $(NODE_SRCS:.c=.o) $(GEN_SRCS:.c=.o) $(C_SRCS:.c=.o) $(APP_SRCS:.c=.o) $(ICS_SRCS:.c=.o) $(O_SRCS:.c=.o) $(Q_SRCS:.c=.o) $(EP_SRCS:.c=.o) $(HT_SRCS:.c=.o)
-	gcc -o $@ $^ $(LIBS)
+	$(CROSS_TOOL) -o $@ $^ $(LIBS)
 $(APP_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
-	gcc -c -o $@ $< $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $< $(CFLAGS)
 $(STREAMER_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
-	gcc -c -o $@ $< $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $< $(CFLAGS)
 $(STREAMER_SRCS2:.c=.o): %.o: $(SRC_DIR)/test/%.c
-	gcc -c -o $@ $< $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $< $(CFLAGS)
 $(RECEIVER_SRCS:.c=.o): %.o: $(SRC_DIR)/test/%.c
-	gcc -c -o $@ $< $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $< $(CFLAGS)
 $(SRCS:.c=.o): %.o: src/%.c
-	gcc -c -o $@ $< $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $< $(CFLAGS)
 $(ICS_SRCS:.c=.o): %.o: $(ICS_DIR)/src/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(O_SRCS:.c=.o): %.o: $(O_DIR)/src/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(Q_SRCS:.c=.o): %.o: $(Q_DIR)/src/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(NODE_SRCS:.c=.o): %.o: $(NODE_DIR)/src/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(GEN_SRCS:.c=.o): %.o: $(GEN_DIR)/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(C_SRCS:.c=.o): %.o: $(C_DIR)/src/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(ANSI_O_SRCS:.c=.o): %.o: $(ANSI_O_DIR)/src/%.c
-	gcc -c -o $@ $^ $(CFLAGS)
+	$(CROSS_TOOL) -c -o $@ $^ $(CFLAGS)
 $(HT_SRCS:.c=.o) : %.o : $(HT_DIR)/src/%.c
-	gcc -o $@ -c $< $(CFLAGS)
+	$(CROSS_TOOL) -o $@ -c $< $(CFLAGS)
 
 clean:
 	rm -fr *.o $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
