@@ -12,8 +12,8 @@ APP:=list-devices
 #RECEIVER:=app-receiver
 #STREAMER2:=app-streamer-2
 
-STREAMER:=test-streamer
-RECEIVER:=test-receiver
+#STREAMER:=test-streamer
+#RECEIVER:=test-receiver
 
 SRC_DIR:=.
 STREAMER_SRCS:=$(STREAMER).c
