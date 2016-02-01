@@ -23,7 +23,7 @@ APP_SRCS:=$(APP).c
 SRCS:=endpoint.c
 
 C_DIR:=../common
-C_SRCS:=ansi-utils.c my-pjlib-utils.c
+C_SRCS:=ansi-utils.c my-pjlib-utils.c lvcode.c my-openssl.c
 
 USERVER_DIR:=../userver
 
@@ -65,6 +65,8 @@ CFLAGS+=-I$(NODE_DIR)/include
 CFLAGS+=-I$(EP_DIR)/include
 CFLAGS+=-I$(HT_DIR)/include
 CFLAGS+=-D__ICS_INTEL__
+
+LIBS+=-lcrypto
 
 all: gen-gm gen-gmc gen-adv gen-gb $(STREAMER) $(STREAMER2) $(RECEIVER) $(APP)
 
