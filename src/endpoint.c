@@ -1,6 +1,57 @@
 #include "endpoint.h"
 #include "ansi-utils.h"
 #include "my-pjlib-utils.h"
+static pj_status_t create_audio_splitter_stream( pj_pool_t *pool,
+		pjmedia_endpt *med_endpt,
+		const pjmedia_codec_info *codec_info,
+		pjmedia_dir dir,
+		pj_uint16_t local_port,
+		const pj_sockaddr_in *rem_addr,
+		pjmedia_stream **p_stream )
+{
+	pjmedia_stream_info info;
+	pjmedia_transport *transport = NULL;
+	pj_status_t status;
+
+	/* Reset stream info. */
+	pj_bzero(&info, sizeof(info));
+
+	/* Initialize stream info formats */
+	info.type = PJMEDIA_TYPE_AUDIO;
+	info.dir = dir;
+	pj_memcpy(&info.fmt, codec_info, sizeof(pjmedia_codec_info));
+	info.tx_pt = codec_info->pt;
+	info.rx_pt = codec_info->pt;
+	info.ssrc = pj_rand();
+
+	/* Copy remote address */
+	pj_memcpy(&info.rem_addr, rem_addr, sizeof(pj_sockaddr_in));
+
+	/* If remote address is not set, set to an arbitrary address
+	 * (otherwise stream will assert).
+	 */
+	if (info.rem_addr.addr.sa_family == 0) {
+		const pj_str_t addr = pj_str("127.0.0.1");
+		pj_sockaddr_in_init(&info.rem_addr.ipv4, &addr, 0);
+	}
+
+	/* Create media transport */
+	status = pjmedia_transport_udp_create(med_endpt, NULL, local_port, 0, &transport);
+	if (status != PJ_SUCCESS)
+		return status;
+
+	/* Now that the stream info is initialized, we can create the 
+	 * stream.
+	 */
+
+	status = pjmedia_stream_create( med_endpt, pool, &info, transport, NULL, p_stream);
+
+	if (status != PJ_SUCCESS) {
+		pjmedia_transport_close(transport);
+		return status;
+	}
+	return PJ_SUCCESS;
+}
 static pj_status_t create_mstream(pj_pool_t *pool, 
                 pjmedia_endpt *endpt, 
                 const pjmedia_codec_info *codec_info, 
@@ -118,11 +169,13 @@ static void endpoint_init(endpoint_t *eep, pjmedia_endpt *ep, pj_pool_t *pool) {
 }
 
 void streamer_init(endpoint_t *streamer, pjmedia_endpt *ep, pj_pool_t *pool) {
+	int i=0;
     endpoint_init(streamer, ep, pool);
     streamer->nstreams = 1;
     streamer->streams = pj_pool_zalloc(streamer->pool, streamer->nstreams * sizeof(endpoint_stream_t));
-
     streamer->streams[0].stream = NULL;
+
+	//assign NULL to audio splitter
 }
 
 pj_status_t streamer_config_stream(endpoint_t *streamer, int lport, char *rhost, int rport) {
@@ -248,7 +301,10 @@ void streamer_stop(endpoint_t *streamer) {
 
 void receiver_init(endpoint_t *receiver, pjmedia_endpt *ep, pj_pool_t *pool, int nchans) {
     int i;
+	pj_status_t status;
+	pj_str_t ip = pj_str(LOCAL_IP_SOUND);
     endpoint_init(receiver, ep, pool);
+	int r_port = R_LOCAL_SOUND_PORT, s_port = S_LOCAL_SOUND_PORT;
 
     receiver->nstreams = nchans - 1;
     receiver->streams = pj_pool_zalloc(receiver->pool, receiver->nstreams * sizeof(endpoint_stream_t));
@@ -261,6 +317,39 @@ void receiver_init(endpoint_t *receiver, pjmedia_endpt *ep, pj_pool_t *pool, int
                    receiver->ci->channel_cnt,\
                    receiver->ci->clock_rate * receiver->ci->channel_cnt * 20 / 1000,\
                    16, PJMEDIA_CONF_NO_DEVICE, &receiver->aout.conf));
+    ANSI_CHECK(__FILE__, pjmedia_conf_create(pool, nchans,\
+                   receiver->ci->clock_rate,\
+                   receiver->ci->channel_cnt,\
+                   receiver->ci->clock_rate * receiver->ci->channel_cnt * 20 / 1000,\
+                   16, PJMEDIA_CONF_NO_DEVICE, &receiver->aout.conf2));
+
+    receiver->splitter = malloc(MAX_SOUND_DEVICE * sizeof(audio_splitter));
+	for (i=0;i<MAX_SOUND_DEVICE;i++) {
+		receiver->splitter->r_stream[i] = NULL;
+		receiver->splitter->s_stream[i] = NULL;
+		pj_bzero(&receiver->splitter->remote_addr[i], sizeof(receiver->splitter->remote_addr));
+		pj_bzero(&receiver->splitter->local_addr[i], sizeof(receiver->splitter->local_addr));
+		receiver->splitter->r_port[i] = r_port;
+		receiver->splitter->s_port[i] = s_port;
+		receiver->splitter->r_stream_port[i] = NULL;
+		receiver->splitter->s_stream_port[i] = NULL;
+		receiver->splitter->m_port[1] = NULL;
+		receiver->splitter->m_port[2] = NULL;
+		receiver->splitter->master_port = NULL;
+		receiver->splitter->snd_port[i] = NULL;
+		r_port += 2;
+		s_port += 2;
+		status = pj_sockaddr_in_init(&receiver->splitter->remote_addr[i], &ip, receiver->splitter->r_port[i]);
+		if (status == PJ_SUCCESS) {
+			fprintf(stdout, " --------------- init socket success R%d\n", receiver->splitter->r_port[i]);
+			fprintf(stdout, " --------------- init socket success S%d\n", receiver->splitter->s_port[i]);
+		}
+	}
+	receiver->splitter->port_array[0] = 5;
+	receiver->splitter->port_array[1] = 6;
+	receiver->splitter->port_array[2] = -1;
+	receiver->splitter->port_array[3] = -1;
+	strcpy(receiver->splitter->play_file, "vnt.wav");
 }
 
 pj_status_t receiver_config_stream(endpoint_t *receiver, char *mcast, int lport, int i) {
@@ -324,10 +413,13 @@ void receiver_config_dev_sink(endpoint_t *receiver, int idx) {
                     receiver->ci->clock_rate * receiver->ci->channel_cnt * 20 / 1000,
                     16,
                     0, &receiver->aout.snd_port));
+					
     receiver->type = EPT_DEV;
     receiver->state = EPS_STOP;
 }
 void receiver_start(endpoint_t *receiver) {
+	setbuf(stdout, NULL);
+	fprintf(stdout, "+++++++++++++++++++++++++++++++++++++++++++++++");
     pjmedia_port *port;
     PJ_LOG(2, (__FILE__, "Receiver Start"));
     int i;
@@ -346,8 +438,42 @@ void receiver_start(endpoint_t *receiver) {
 
             port = pjmedia_conf_get_master_port(receiver->aout.conf);
             CHECK_NULL(__FILE__, port);
-            ANSI_CHECK(__FILE__, pjmedia_snd_port_connect(receiver->aout.snd_port, port));
+            //ANSI_CHECK(__FILE__, pjmedia_snd_port_connect(receiver->aout.snd_port, port));
+			pj_status_t status;
+			int i = 0;
 
+			receiver->splitter->m_port[0] = pjmedia_conf_get_master_port(receiver->aout.conf);
+			receiver->splitter->m_port[1] = pjmedia_conf_get_master_port(receiver->aout.conf2);
+			//create master clock to controll flow internal audio stream
+			status = pjmedia_master_port_create(receiver->pool, receiver->splitter->m_port[1], receiver->splitter->m_port[0], 0, &receiver->splitter->master_port);
+			status = pjmedia_master_port_start(receiver->splitter->master_port);
+			
+			//testing
+			status = pjmedia_wav_player_port_create(receiver->pool, receiver->splitter->play_file, 0, 0, 0, &receiver->splitter->play_file_port);
+			pjmedia_conf_add_port(receiver->aout.conf, receiver->pool, receiver->splitter->play_file_port, NULL, &receiver->splitter->f_slot);
+			status = pjmedia_conf_connect_port(receiver->aout.conf, receiver->splitter->f_slot, 0, 0);
+			if (status == PJ_SUCCESS) {
+				fprintf(stdout, "------------------------------- OK\n");
+			} else {
+				fprintf(stdout, "------------------------------- NOK\n");
+			}
+			// end of testing
+			for (i=0; i<MAX_SOUND_DEVICE; i++) {
+				//create MAX_SOUND_DEVICE (4) 'send streams' and then get (4) port's streams.
+				status = create_audio_splitter_stream(receiver->pool, receiver->ep, receiver->ci, PJMEDIA_DIR_ENCODING, receiver->splitter->s_port[i], &receiver->splitter->remote_addr[i], &receiver->splitter->s_stream[i]);
+				status = pjmedia_stream_get_port(receiver->splitter->s_stream[i], &receiver->splitter->s_stream_port[i]);
+				pjmedia_conf_add_port(receiver->aout.conf2, receiver->pool, receiver->splitter->s_stream_port[i], NULL, &receiver->splitter->s_slot[i]);
+				pjmedia_conf_connect_port(receiver->aout.conf2, 0, receiver->splitter->s_slot[i], 0);
+				//create MAX_SOUND_DEVICE (4) 'receive streams' and then get (4) port's streams.
+				status = create_audio_splitter_stream(receiver->pool, receiver->ep, receiver->ci, PJMEDIA_DIR_DECODING, receiver->splitter->r_port[i], &receiver->splitter->local_addr[i], &receiver->splitter->r_stream[i]);
+				status = pjmedia_stream_get_port(receiver->splitter->r_stream[i], &receiver->splitter->r_stream_port[i]);
+				if (receiver->splitter->port_array[i] >= 0) {
+					status = pjmedia_snd_port_create_player(receiver->pool, receiver->splitter->port_array[0], 8000, 1, 160, 16, 0, &receiver->splitter->snd_port[i]);
+					status = pjmedia_snd_port_connect(receiver->splitter->snd_port[i], receiver->splitter->r_stream_port[i]);
+				}
+				pjmedia_stream_start(receiver->splitter->s_stream[i]);
+				pjmedia_stream_start(receiver->splitter->r_stream[i]);
+			}
             receiver->state = EPS_START;
             break;
         default:
