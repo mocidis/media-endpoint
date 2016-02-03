@@ -408,7 +408,8 @@ void receiver_config_dev_sink(endpoint_t *receiver, int idx) {
                     receiver->ci->clock_rate * receiver->ci->channel_cnt * 20 / 1000,
                     16,
                     0, &receiver->aout.snd_port));
-					
+	//set default output sound device
+	receiver->splitter->port_array[0] = idx;
     receiver->type = EPT_DEV;
     receiver->state = EPS_STOP;
 }
