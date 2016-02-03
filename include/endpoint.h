@@ -102,4 +102,6 @@ void receiver_adjust_volume(endpoint_t *receiver, int stream_idx, int incrementa
 void receiver_adjust_master_volume(endpoint_t *receiver, int incremental);
 void receiver_reset_volume(endpoint_t *receiver);
 void receiver_dump_streams(endpoint_t *receiver);
+void receiver_splitter_stop(endpoint_t *receiver);
+void receiver_splitter_start(endpoint_t *receiver);
 #endif
