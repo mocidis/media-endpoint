@@ -3,6 +3,10 @@
 #include <pjmedia.h>
 #include <pjmedia-codec.h>
 #include <pjlib.h>
+#define S_LOCAL_SOUND_PORT 40000
+#define R_LOCAL_SOUND_PORT 60000 
+#define LOCAL_IP_SOUND "127.0.0.1"
+#define MAX_SOUND_DEVICE 4
 typedef enum streamer_type_e {
     EPT_UNKNOWN = -1,
     EPT_FILE = 1,
@@ -32,7 +36,26 @@ typedef struct endpoint_stream_s {
         unsigned discard;
     } drop;
 } endpoint_stream_t;
-
+typedef struct audio_splitter {
+	pj_sockaddr_in remote_addr[MAX_SOUND_DEVICE];
+	pj_sockaddr_in local_addr[MAX_SOUND_DEVICE];
+	pjmedia_stream *r_stream[MAX_SOUND_DEVICE];
+	pjmedia_stream *s_stream[MAX_SOUND_DEVICE];
+	pjmedia_port *r_stream_port[MAX_SOUND_DEVICE];
+	pjmedia_port *s_stream_port[MAX_SOUND_DEVICE];
+	pjmedia_port *m_port[2];
+	pjmedia_snd_port *snd_port[MAX_SOUND_DEVICE];
+	int port_array[MAX_SOUND_DEVICE];
+	pjmedia_master_port *master_port;
+	int r_port[MAX_SOUND_DEVICE];
+	int s_port[MAX_SOUND_DEVICE];
+	int r_slot[MAX_SOUND_DEVICE];
+	int s_slot[MAX_SOUND_DEVICE];
+	/////////
+	pjmedia_port *play_file_port;
+	int f_slot;
+	char play_file[8];
+} audio_splitter; //audio splitter
 typedef struct endpoint_s {
     endpoint_type type;
     endpoint_state state;
@@ -42,10 +65,11 @@ typedef struct endpoint_s {
     
     int nstreams;
     endpoint_stream_t *streams;
-
+	audio_splitter *splitter;
     union {
         struct {
-            pjmedia_conf *conf;
+            pjmedia_conf *conf; //all input stream from other radio will be mixed in this conf
+            pjmedia_conf *conf2; //this is secondary conf for output audio stream to multiple audio devices
             union {
                 pjmedia_master_port *mport;
                 pjmedia_snd_port *snd_port;
@@ -78,4 +102,6 @@ void receiver_adjust_volume(endpoint_t *receiver, int stream_idx, int incrementa
 void receiver_adjust_master_volume(endpoint_t *receiver, int incremental);
 void receiver_reset_volume(endpoint_t *receiver);
 void receiver_dump_streams(endpoint_t *receiver);
+void receiver_splitter_stop(endpoint_t *receiver);
+void receiver_splitter_start(endpoint_t *receiver);
 #endif
