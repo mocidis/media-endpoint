@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         usage(argv[0]);
     }
 
-    int lport = 4321;
-    char *mcast = "237.1.0.1";
+    int lport = 9876;
+    char *mcast = argv[2];
 
     int dev_idx;
 
