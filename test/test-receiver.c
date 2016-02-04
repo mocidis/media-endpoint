@@ -5,7 +5,7 @@
 endpoint_t receiver;
 
 int usage(char *app) {
-    SHOW_LOG(1, "%s <device_idx>\n", app);  
+    SHOW_LOG(1, "%s <device_idx> <ip> <port>\n", app);  
     exit(-1);
 }
 
@@ -17,12 +17,12 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-    if (argc < 2) {
+    if (argc < 4) {
         usage(argv[0]);
     }
 
-    int lport = 4321;
-    char *mcast = "237.1.0.1";
+    int lport = argv[3];
+    char *mcast = argv[2];
 
     int dev_idx;
 
