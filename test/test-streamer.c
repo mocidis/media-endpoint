@@ -5,7 +5,7 @@
 endpoint_t streamer;
 
 int usage(char *app) {
-    SHOW_LOG(1, "%s <device_idx>\n", app);  
+    SHOW_LOG(1, "%s <device_idx> <ip> <port>\n", app);  
     exit(-1);
 }
 
@@ -17,11 +17,11 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-    if (argc < 3) {
+    if (argc < 4) {
         usage(argv[0]);
     }
 
-    int rport = atoi(argv[3]);
+    int rport = argv[3];
     char *rhost = argv[2];
     //char *rhost = "192.168.2.50";
 
