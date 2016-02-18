@@ -8,13 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-static pj_status_t create_stream( pj_pool_t *pool,
-		pjmedia_endpt *med_endpt,
-		const pjmedia_codec_info *codec_info,
-		pjmedia_dir dir,
-		pj_uint16_t local_port,
-		const pj_sockaddr_in *rem_addr,
-		pjmedia_stream **p_stream )
+static pj_status_t create_stream( pj_pool_t *pool, pjmedia_endpt *med_endpt, const pjmedia_codec_info *codec_info, pjmedia_dir dir, pj_uint16_t local_port, const pj_sockaddr_in *rem_addr, pjmedia_stream **p_stream )
 {
 	pjmedia_stream_info info;
 	pjmedia_transport *transport = NULL;

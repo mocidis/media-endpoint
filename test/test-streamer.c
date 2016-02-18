@@ -17,11 +17,11 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-    if (argc < 2) {
+    if (argc < 3) {
         usage(argv[0]);
     }
 
-    int rport = 9876;
+    int rport = atoi(argv[3]);
     char *rhost = argv[2];
     //char *rhost = "192.168.2.50";
 

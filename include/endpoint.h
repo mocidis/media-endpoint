@@ -3,10 +3,13 @@
 #include <pjmedia.h>
 #include <pjmedia-codec.h>
 #include <pjlib.h>
-#define S_LOCAL_SOUND_PORT 40000
-#define R_LOCAL_SOUND_PORT 60000 
 #define LOCAL_IP_SOUND "127.0.0.1"
-#define MAX_SOUND_DEVICE 4
+/*
+ * the maximum of streams can be attached to loopback transport is 8, 
+ * if you need more, please modify pjproject (pjmedia/src/pjmedia/transport_loop.c)
+ * and then rebuild it.
+*/
+#define MAX_SOUND_DEVICE 4 
 typedef enum streamer_type_e {
     EPT_UNKNOWN = -1,
     EPT_FILE = 1,
@@ -37,20 +40,19 @@ typedef struct endpoint_stream_s {
     } drop;
 } endpoint_stream_t;
 typedef struct audio_splitter {
-	pj_sockaddr_in remote_addr[MAX_SOUND_DEVICE];
-	pj_sockaddr_in local_addr[MAX_SOUND_DEVICE];
 	pjmedia_stream *r_stream[MAX_SOUND_DEVICE];
-	pjmedia_stream *s_stream[MAX_SOUND_DEVICE];
+	pjmedia_stream *s_stream;
 	pjmedia_port *r_stream_port[MAX_SOUND_DEVICE];
-	pjmedia_port *s_stream_port[MAX_SOUND_DEVICE];
+	pjmedia_port *s_stream_port;
 	pjmedia_port *m_port[2];
 	pjmedia_snd_port *snd_port[MAX_SOUND_DEVICE];
 	int port_array[MAX_SOUND_DEVICE];
 	pjmedia_master_port *master_port;
 	int r_port[MAX_SOUND_DEVICE];
-	int s_port[MAX_SOUND_DEVICE];
+	int s_port;
 	int r_slot[MAX_SOUND_DEVICE];
-	int s_slot[MAX_SOUND_DEVICE];
+	int s_slot;
+	pjmedia_transport *transport;
 	/////////
 	pjmedia_port *play_file_port;
 	int f_slot;

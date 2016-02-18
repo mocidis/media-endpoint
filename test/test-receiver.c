@@ -17,11 +17,11 @@ int main(int argc, char *argv[]) {
     pjmedia_stream *stream;
     pjmedia_codec_info *ci;
 
-    if (argc < 2) {
+    if (argc < 3) {
         usage(argv[0]);
     }
 
-    int lport = 9876;
+    int lport = atoi(argv[3]);
     char *mcast = argv[2];
 
     int dev_idx;
